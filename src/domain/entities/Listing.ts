@@ -24,10 +24,13 @@ export interface Listing {
 }
 
 export interface ListingFilters {
+  // API-supported filters (basic only)
   city?: string;
   country?: string;
+  match?: string; // Search by listing name
+  
+  // Client-side filters (applied after fetching)
   propertyType?: string;
   minBedrooms?: number;
   maxBedrooms?: number;
-  isActive?: boolean;
 }
