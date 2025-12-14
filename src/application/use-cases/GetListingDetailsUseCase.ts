@@ -32,6 +32,7 @@ export interface ListingDetailsResult {
   listing: Listing;
   reviews: Review[];
   stats: ListingStats;
+  approvedReviewIds: (string | number)[];
 }
 
 export class GetListingDetailsUseCase {
@@ -106,6 +107,7 @@ export class GetListingDetailsUseCase {
         categoryAverages,
         actionItems,
       },
+      approvedReviewIds,
     };
   }
 

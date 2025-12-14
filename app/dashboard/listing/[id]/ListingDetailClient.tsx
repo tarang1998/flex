@@ -26,6 +26,7 @@ interface ListingWithReviews {
   listing: Listing;
   reviews: Review[];
   stats: ListingStats;
+  approvedReviewIds: (string | number)[];
 }
 
 interface Props {
@@ -35,11 +36,12 @@ interface Props {
 
 export default function ListingDetailClient({ initialData, listingId }: Props) {
   const [listingData] = useState<ListingWithReviews>(initialData);
-  const [approvedReviewIds, setApprovedReviewIds] = useState<Set<number>>(new Set());
+  const approvedReviewIds = new Set(initialData.approvedReviewIds);
   const [channels, setChannels] = useState<string[]>([]);
   const [filterRating, setFilterRating] = useState<string>('all');
   const [filterChannel, setFilterChannel] = useState<string>('all');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
+  // Replace category filter with status filter
+  const [filterStatus, setFilterStatus] = useState<'all' | 'approved' | 'unapproved'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'rating'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -50,22 +52,10 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
     ) as string[];
     setChannels(uniqueChannels);
     console.log('Unique channels:', uniqueChannels);
-    
-    fetchApprovedReviews();
   }, [initialData.reviews]);
 
-  const fetchApprovedReviews = async () => {
-    try {
-      const response = await fetch(`/api/reviews/approved?listingId=${listingId}`);
-      const data = await response.json();
-      if (data.success) {
-        setApprovedReviewIds(new Set(data.data.approvedReviewIds));
-      }
-    } catch (error) {
-      console.error('Error fetching approved reviews:', error);
-    }
-  };
 
+  // Toggle review approval and reload the page to get updated approvedReviewIds
   const toggleReviewApproval = async (reviewId: number, currentlyApproved: boolean) => {
     try {
       const response = await fetch('/api/reviews/approval', {
@@ -80,15 +70,8 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
       });
 
       if (response.ok) {
-        setApprovedReviewIds(prev => {
-          const newSet = new Set(prev);
-          if (currentlyApproved) {
-            newSet.delete(reviewId);
-          } else {
-            newSet.add(reviewId);
-          }
-          return newSet;
-        });
+        // Reload the page to get updated approvedReviewIds from the server
+        window.location.reload();
       }
     } catch (error) {
       console.error('Error toggling review approval:', error);
@@ -107,37 +90,44 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
     new Set(reviews.flatMap(r => r.reviewCategory?.map(c => c.category) || []))
   );
 
-  // Apply filters and sorting
-  const filteredReviews = reviews.filter(review => {
-    if (filterRating !== 'all') {
-      const rating = review.rating || 0;
-      if (filterRating === '5' && rating < 5) return false;
-      if (filterRating === '4' && (rating < 4 || rating >= 5)) return false;
-      if (filterRating === '3' && (rating < 3 || rating >= 4)) return false;
-      if (filterRating === 'low' && rating >= 3) return false;
-    }
-    
-    if (filterChannel !== 'all' && review.channel !== filterChannel) return false;
-    
-    if (filterCategory !== 'all') {
-      const hasCategory = review.reviewCategory?.some(c => c.category === filterCategory);
-      if (!hasCategory) return false;
-    }
-    
-    return true;
-  }).sort((a, b) => {
-    let comparison = 0;
-    
-    if (sortBy === 'date') {
-      const dateA = new Date(a.submittedAt || 0).getTime();
-      const dateB = new Date(b.submittedAt || 0).getTime();
-      comparison = dateB - dateA;
-    } else if (sortBy === 'rating') {
-      comparison = (b.rating || 0) - (a.rating || 0);
-    }
-    
-    return sortDirection === 'desc' ? comparison : -comparison;
-  });
+  // Apply filters and sorting, and mark approved
+  const filteredReviews = reviews
+    .map(review => ({
+      ...review,
+      approved: review.id ? approvedReviewIds.has(review.id) : false
+    }))
+    .filter(review => {
+      if (filterRating !== 'all') {
+        const rating = review.rating || 0;
+        if (filterRating === '5' && rating < 5) return false;
+        if (filterRating === '4' && (rating < 4 || rating >= 5)) return false;
+        if (filterRating === '3' && (rating < 3 || rating >= 4)) return false;
+        if (filterRating === 'low' && rating >= 3) return false;
+      }
+      if (filterChannel !== 'all' && review.channel !== filterChannel) return false;
+      if (filterStatus === 'approved' && !review.approved) return false;
+      if (filterStatus === 'unapproved' && review.approved) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      // By default, approved reviews come first
+      if (a.approved !== b.approved) {
+        return a.approved ? -1 : 1;
+      }
+      let comparison = 0;
+      if (sortBy === 'date') {
+        const dateA = new Date(a.submittedAt || 0).getTime();
+        const dateB = new Date(b.submittedAt || 0).getTime();
+        comparison = dateB - dateA;
+      } else if (sortBy === 'rating') {
+        comparison = (b.rating || 0) - (a.rating || 0);
+      }
+      return sortDirection === 'desc' ? comparison : -comparison;
+    })
+    .map(review => ({
+      ...review,
+      approved: review.id ? approvedReviewIds.has(review.id) : false
+    }));
 
   // Calculate trends
   const lowRatingCount = reviews.filter(r => (r.rating || 0) < 3.5).length;
@@ -234,7 +224,7 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
         </div>
 
         {/* Review Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600">Property Rating</h3>
@@ -257,6 +247,18 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
             <p className="text-xs text-gray-500 mt-1">All reviews</p>
           </div>
 
+          {/* Average Approved Review Rating */}
+          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-600">Avg Approved Rating</h3>
+              <svg className="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="text-3xl font-bold text-gray-900">{avgApprovedRating.toFixed(2)}</div>
+            <p className="text-xs text-gray-500 mt-1">Approved reviews</p>
+          </div>
+
           <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600">Total Reviews</h3>
@@ -276,7 +278,6 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
               </svg>
             </div>
             <div className="text-3xl font-bold text-gray-900">{approvedReviews}</div>
-            <p className="text-xs text-gray-500 mt-1">Avg: {avgApprovedRating.toFixed(2)}</p>
           </div>
 
           <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
@@ -545,7 +546,7 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
                 <select
                   value={filterRating}
                   onChange={(e) => setFilterRating(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
                   <option value="all">All Ratings</option>
                   <option value="5">5 Stars</option>
@@ -561,7 +562,7 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
                 <select
                   value={filterChannel}
                   onChange={(e) => setFilterChannel(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
                   <option value="all">All Channels</option>
                   {channels.map(channel => (
@@ -570,18 +571,17 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
                 </select>
               </div>
 
-              {/* Category Filter */}
+              {/* Status Filter */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
                 <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as 'all' | 'approved' | 'unapproved')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
-                  <option value="all">All Categories</option>
-                  {allCategories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
+                  <option value="all">All</option>
+                  <option value="approved">Approved</option>
+                  <option value="unapproved">Unapproved</option>
                 </select>
               </div>
 
@@ -591,7 +591,7 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'date' | 'rating')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
                   <option value="date">Date</option>
                   <option value="rating">Rating</option>
@@ -604,7 +604,7 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
                 <select
                   value={sortDirection}
                   onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
                   <option value="desc">Newest / Highest</option>
                   <option value="asc">Oldest / Lowest</option>
@@ -613,12 +613,12 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
             </div>
 
             {/* Clear Filters */}
-            {(filterRating !== 'all' || filterChannel !== 'all' || filterCategory !== 'all') && (
+            {(filterRating !== 'all' || filterChannel !== 'all' || filterStatus !== 'all') && (
               <button
                 onClick={() => {
                   setFilterRating('all');
                   setFilterChannel('all');
-                  setFilterCategory('all');
+                  setFilterStatus('all');
                 }}
                 className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
@@ -643,13 +643,11 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
             ) : (
               <div className="space-y-4">
                 {filteredReviews.map((review) => {
-                  const isApproved = review.id ? approvedReviewIds.has(review.id) : false;
-                  
                   return (
                     <div 
                       key={review.id} 
                       className={`border-2 rounded-lg p-6 transition-all ${
-                        isApproved 
+                        review.approved 
                           ? 'border-green-200 bg-green-50/30' 
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
@@ -663,7 +661,7 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
                                 {review.channel}
                               </span>
                             )}
-                            {isApproved && (
+                            {review.approved && (
                               <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full flex items-center gap-1">
                                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -691,21 +689,19 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
                           </div>
                         </div>
                         <button
-                          onClick={() => toggleReviewApproval(review.id!, isApproved)}
+                          onClick={() => toggleReviewApproval(review.id!, review.approved)}
                           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                            isApproved
+                            review.approved
                               ? 'bg-red-100 text-red-700 hover:bg-red-200'
                               : 'bg-green-100 text-green-700 hover:bg-green-200'
                           }`}
                         >
-                          {isApproved ? 'Unapprove' : 'Approve'}
+                          {review.approved ? 'Unapprove' : 'Approve'}
                         </button>
                       </div>
-                      
                       {review.publicReview && (
                         <p className="text-gray-700 mb-4 leading-relaxed">{review.publicReview}</p>
                       )}
-                      
                       {review.reviewCategory && review.reviewCategory.length > 0 && (
                         <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                           <h4 className="text-sm font-semibold text-gray-700 mb-3">Category Ratings:</h4>
