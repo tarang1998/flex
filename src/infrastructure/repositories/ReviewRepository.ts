@@ -7,6 +7,7 @@ import { IReviewRepository } from '@/domain/repositories/IReviewRepository';
 import { Review, ReviewFilters } from '@/domain/entities/Review';
 import { mockReviews } from '../data/mockReviews';
 import { HostawayClient } from '../api/HostawayClient';
+import { supabase } from '../database/supabase';
 
 export class ReviewRepository implements IReviewRepository {
   private reviews: Review[] = [...mockReviews];
@@ -28,23 +29,71 @@ export class ReviewRepository implements IReviewRepository {
     return reviews;
   }
 
-  async getMockReviews(): Promise<Review[]> {
-    return [...this.reviews];
+  async getMockReviews(listingIds?: number[]): Promise<Review[]> {
+    if (!listingIds || listingIds.length === 0) {
+      return [...this.reviews];
+    }
+    return this.reviews.filter(review => 
+      review.listingMapId && listingIds.includes(review.listingMapId)
+    );
   }
 
   async getReviewsFromGoogle(): Promise<Review[]> {
     return [];
   }
 
-  async updateReviewApproval(id: number, isApproved: boolean): Promise<Review> {
-    const reviewIndex = this.reviews.findIndex(review => review.id === id);
-    
-    if (reviewIndex === -1) {
-      throw new Error(`Review with id ${id} not found`);
+  async getApprovedReviewIdsByListing(listingId: number): Promise<number[]> {
+    const { data, error } = await supabase
+      .from('approved_reviews')
+      .select('review_id')
+      .eq('listing_id', listingId)
+      .eq('is_approved', true);
+
+    if (error) {
+      console.error('Error fetching approved reviews from Supabase:', error);
+      return [];
     }
 
-    this.reviews[reviewIndex].isApprovedForPublicDisplay = isApproved;
-    return this.reviews[reviewIndex];
+    return data?.map((row: { review_id: number }) => row.review_id) || [];
+  }
+
+  async updateReviewApproval(
+    reviewId: number,
+    listingId: number,
+    isApproved: boolean,
+    approvedBy?: string
+  ): Promise<void> {
+    if (isApproved) {
+      // Insert or update the approval record
+      const { error } = await supabase
+        .from('approved_reviews')
+        .upsert(
+          {
+            review_id: reviewId,
+            listing_id: listingId,
+            is_approved: true,
+            approved_by: approvedBy || 'system',
+            approved_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'review_id',
+          }
+        );
+
+      if (error) {
+        throw new Error(`Failed to approve review: ${error.message}`);
+      }
+    } else {
+      // Remove the approval or mark as not approved
+      const { error } = await supabase
+        .from('approved_reviews')
+        .delete()
+        .eq('review_id', reviewId);
+
+      if (error) {
+        throw new Error(`Failed to disapprove review: ${error.message}`);
+      }
+    }
   }
 
 }
