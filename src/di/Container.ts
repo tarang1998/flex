@@ -8,6 +8,8 @@ import { GetReviewsFromGoogle } from '@/application/use-cases/GetReviewsFromGoog
 import { GetApprovedReviewIdsByListing } from '@/application/use-cases/GetApprovedReviewIdsByListing';
 import { GetListingsUseCase } from '@/application/use-cases/GetListingsUseCase';
 import { GetListingByIdUseCase } from '@/application/use-cases/GetListingByIdUseCase';
+import { GetListingDetailsUseCase } from '@/application/use-cases/GetListingDetailsUseCase';
+import { GetPropertiesUseCase } from '@/application/use-cases/GetPropertiesUseCase';
 import { GetReviewStatsUseCase } from '@/application/use-cases/GetReviewStatsUseCase';
 import { UpdateReviewApprovalUseCase } from '@/application/use-cases/UpdateReviewApprovalUseCase';
 import { GetDashboardStatsUseCase } from '@/application/use-cases/GetDashboardStatsUseCase';
@@ -74,6 +76,26 @@ export class DIContainer {
 
   getListingByIdUseCase(): GetListingByIdUseCase {
     return new GetListingByIdUseCase(this.getListingRepository());
+  }
+
+  getListingDetailsUseCase(): GetListingDetailsUseCase {
+    return new GetListingDetailsUseCase(
+      this.getListingRepository(),
+      this.getReviewsFromHostAway(),
+      this.getMockReviews(),
+      this.getReviewsFromGoogle(),
+      this.getApprovedReviewIdsByListing()
+    );
+  }
+
+  getPropertiesUseCase(): GetPropertiesUseCase {
+    return new GetPropertiesUseCase(
+      this.getListingRepository(),
+      this.getReviewsFromHostAway(),
+      this.getMockReviews(),
+      this.getReviewsFromGoogle(),
+      this.getApprovedReviewIdsByListing()
+    );
   }
 
   getReviewStatsUseCase(): GetReviewStatsUseCase {
