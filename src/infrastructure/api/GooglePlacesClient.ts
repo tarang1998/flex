@@ -132,7 +132,6 @@ export class GooglePlacesClient {
             listingName: listingName || '',
             listingMapId: listingId,
             channel: 'Google',
-            isApprovedForPublicDisplay: true,
           };
         })
         .filter((review: any) => review.type === 'guest-to-host');

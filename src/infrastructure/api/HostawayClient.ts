@@ -342,7 +342,6 @@ export class HostawayClient {
       guestName: review.guestName,
       listingName: review.listingName,
       channel: HostawayClient.CHANNEL_MAP[review.channelId] || 'Unknown',
-      isApprovedForPublicDisplay: false,
     }));
   }
 

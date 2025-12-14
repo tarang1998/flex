@@ -32,7 +32,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Bromley Collection',
     listingMapId: 155613,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155613002,
@@ -52,7 +52,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Bromley Collection',
     listingMapId: 155613,
     channel: 'Booking.com',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155613003,
@@ -72,7 +72,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Bromley Collection',
     listingMapId: 155613,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: true,
+    
   },
   // ...existing reviews for 155613 remain unchanged...
 
@@ -97,7 +97,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155615002,
@@ -117,7 +117,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Booking.com',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155615003,
@@ -137,7 +137,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155615004,
@@ -157,7 +157,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Expedia',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155615005,
@@ -177,7 +177,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Booking.com',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155615006,
@@ -197,7 +197,6 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: false,
   },
   {
     id: 155615007,
@@ -217,7 +216,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Booking.com',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155615008,
@@ -237,7 +236,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155615009,
@@ -257,7 +256,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Expedia',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 155615010,
@@ -277,7 +276,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Peckham Apartments',
     listingMapId: 155615,
     channel: 'Booking.com',
-    isApprovedForPublicDisplay: true,
+    
   },
 
   // ==========================================
@@ -301,7 +300,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 346994002,
@@ -321,7 +320,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Booking.com',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 346994003,
@@ -341,7 +340,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 346994004,
@@ -361,7 +360,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Expedia',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 346994005,
@@ -381,7 +380,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Booking.com',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 346994006,
@@ -401,7 +400,6 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: false,
   },
   {
     id: 346994007,
@@ -421,7 +419,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Expedia',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 346994008,
@@ -441,7 +439,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 346994009,
@@ -461,7 +459,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Booking.com',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 346994010,
@@ -481,7 +479,7 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Airbnb',
-    isApprovedForPublicDisplay: true,
+    
   },
   {
     id: 346994011,
@@ -501,6 +499,6 @@ export const mockReviews: Review[] = [
     listingName: 'The Putney Apart 2',
     listingMapId: 346994,
     channel: 'Expedia',
-    isApprovedForPublicDisplay: true,
+    
   },
 ];

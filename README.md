@@ -2,49 +2,86 @@
 
 ## Live Demo
 
-You can try the Flex Living Reviews Dashboard live here:
-
 - **Manager Dashboard:** [https://flex-delta-orcin.vercel.app/](https://flex-delta-orcin.vercel.app/)
+- **Example Listing Details:** [https://flex-delta-orcin.vercel.app/dashboard/listing/155613](https://flex-delta-orcin.vercel.app/dashboard/listing/155613)
+- **Example Public Review Page:** [https://flex-delta-orcin.vercel.app/property/155613](https://flex-delta-orcin.vercel.app/property/155613)
 
 **How to use:**
 
-- The app opens directly to the Manager Dashboard, where you can view all property listings (the ones retrieved from the hostaway API) and their review stats.
-- To view the full property review display page for a specific listing, click **View Full Property Details** on any listing report.
+- The app opens directly to the Manager Dashboard, where you can view all property listings (the ones retrieved from the sandbox hostaway API) and their review stats.
+- To view the public property review display page for a specific listing, click **View Full Property Details** on any listing report.
 - Only reviews approved by the manager are shown on the public page.
 
 ## Tech Stack
 
-- **Frontend:** Next.js (App Router), React, TypeScript
-- **Backend:** Next.js API routes, Node.js, Supabase
+- **Frontend:** Next.js, React, TypeScript
+- **Backend:** Next.js, Node.js, Supabase
 - **APIs:**
-  - Hostaway Reviews API (mocked)
-  - Google Places API (if feasible)
+  - Hostaway Reviews API
+  - Google Places API
 - **AI Tool Used:** GitHub Copilot (GPT-4.1, Claude Sonnet 4.5), Perplexity
 
 ## Key Features & Design Decisions
 
 - **Hostaway Integration:**
-  - Mocked Hostaway API using provided JSON data.
+
+  - Mocked Hostaway API for review data.
+  - Relying on 3 usecases to fetch review data
+    - [GetMockReviews](./src/application/use-cases/GetMockReviews.ts)
+    - [GetReviewsFromHostAway](./src/application/use-cases/GetReviewsFromHostAway.ts)
+    - [GetReviewsFromGoogle](./src/application/use-cases/GetReviewsFromGoogle.ts)
+  - Fetching Listings from HostAway API : [GetListingsUseCase](/src/application/use-cases/GetListingsUseCase.ts)
+
 - **Google Reviews Integration:**
-  - Integrated via Google Places API where possible.
+
+  - Integrated via Google Places API.
   - Attempting to fetch reviews from the listings mentioned in the sandbox environment, however no reviews are found for these listings
     ![alt text](image.png)
+
 - **Manager Dashboard:**
   - Displays property listings provided by the sandboxed Hostaway API.
   - Managers can approve reviews for public display.
-- **API Normalization:**
-  - `/api/reviews/hostaway` returns normalized, structured review data for frontend use.
 
 ## API Behaviors
 
 - **GET `/api/reviews/hostaway`**
-  - Returns normalized reviews from the Hostaway (mocked) API.
+  - `/api/reviews/hostaway` returns normalized, structured review data for frontend use.
+    - **Query Parameters:**
+      - `listingMapIds` (comma-separated numbers): Filter by listing IDs. Example: `listingMapIds=123,456`
+      - `limit` (number): Limit the number of reviews returned.
+      - `offset` (number): Offset for pagination.
+      - `type` ('guest-to-host' | 'host-to-guest'): Filter by review type. Only valid values allowed.
+      - `statuses` (comma-separated, allowed: 'awaiting', 'pending', 'scheduled', 'submitted', 'published', 'expired'): Filter by review status. Only valid values allowed.
+    - **Response Model:**
+      ```json
+      {
+        "status": "success",
+        "data": [
+          {
+            "id": 123,
+            "type": "guest-to-host",
+            "status": "published",
+            "rating": 4.5,
+            "publicReview": "Great stay!",
+            "reviewCategory": [
+              { "category": "cleanliness", "rating": 5 },
+              { "category": "location", "rating": 4 }
+            ],
+            "submittedAt": "2025-12-14T00:00:00.000Z",
+            "guestName": "John Doe",
+            "listingName": "Cozy Apartment",
+            "listingMapId": 123,
+            "channel": "Airbnb"
+          }
+        ],
+        "count": 1
+      }
+      ```
 
 ## Google Reviews Findings
 
 - The Google Places API can be used to fetch public reviews for properties if the place can be matched by name and address.
 - Integration is implemented where feasible. If a property cannot be matched, the dashboard gracefully handles the absence of Google reviews.
-- API keys and quotas may limit the number of requests; ensure your API key is set in the environment.
 
 ## Local Setup Instructions
 
@@ -59,11 +96,7 @@ You can try the Flex Living Reviews Dashboard live here:
    ```
 3. **Set environment variables:**
    - Create a `.env.local` file with your API keys:
-     ```env
-     HOSTAWAY_ACCOUNT_ID=61148
-     HOSTAWAY_API_KEY=f94377ebbbb479490bb3ec364649168dc443dda2e4830facaf5de2e74ccc9152
-     GOOGLE_PLACES_API_KEY=your_google_api_key
-     ```
+   - Check env.local.example
 4. **Run the development server:**
    ```bash
    npm run dev

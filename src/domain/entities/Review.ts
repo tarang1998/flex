@@ -20,7 +20,6 @@ export interface Review {
   listingName: string;
   listingMapId?: number;
   channel?: string;
-  isApprovedForPublicDisplay?: boolean;
 }
 
 export interface ReviewFilters {
@@ -29,11 +28,6 @@ export interface ReviewFilters {
   offset?: number;
   type?: 'guest-to-host' | 'host-to-guest';
   statuses?: ('awaiting' | 'pending' | 'scheduled' | 'submitted' | 'published' | 'expired')[];
-  id?: number;
-  listingName?: string;
-  minRating?: number;
-  maxRating?: number;
-  approvedOnly?: boolean;
 }
 
 export interface ReviewStats {
