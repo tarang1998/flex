@@ -4,7 +4,7 @@ import { Review } from '@/domain/entities/Review';
 export class GetMockReviews {
   constructor(private reviewRepository: IReviewRepository) {}
 
-  async execute(): Promise<Review[]> {
-    return await this.reviewRepository.getMockReviews();
+  async execute(listingIds?: number[]): Promise<Review[]> {
+    return await this.reviewRepository.getMockReviews(listingIds);
   }
 }
