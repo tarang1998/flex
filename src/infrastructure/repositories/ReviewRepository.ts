@@ -48,7 +48,7 @@ export class ReviewRepository implements IReviewRepository {
     );
   }
 
-  async getReviewsFromGoogle(listingId: number,listingName?: string, listingAddress?: string): Promise<Review[]> {
+  async getReviewsFromGoogle(listingId: number,listingName: string, listingAddress: string): Promise<Review[]> {
     if (!this.googlePlacesClient) {
       console.warn('Google Places client not initialized. Returning empty reviews.');
       return [];

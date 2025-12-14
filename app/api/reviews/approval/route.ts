@@ -11,6 +11,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { reviewId, listingId, isApproved, approvedBy } = body;
 
+    console.log('Received review approval request:', body);
+
     // Validate required fields
     if (typeof reviewId !== 'number' || typeof listingId !== 'number') {
       return NextResponse.json(

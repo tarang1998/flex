@@ -49,6 +49,7 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
       new Set(initialData.reviews.map((r: Review) => r.channel).filter(Boolean))
     ) as string[];
     setChannels(uniqueChannels);
+    console.log('Unique channels:', uniqueChannels);
     
     fetchApprovedReviews();
   }, [initialData.reviews]);

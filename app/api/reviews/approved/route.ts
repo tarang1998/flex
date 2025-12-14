@@ -38,17 +38,31 @@ export async function GET(request: NextRequest) {
     const approvedReviewIds = await getApprovedReviewIdsByListing.execute(listingIdNumber);
 
     // Fetch all reviews from all sources
-    const getReviewsFromHostAway = container().getGetReviewsFromHostAway();
-    const getMockReviews = container().getGetMockReviews();
-    const getReviewsFromGoogle = container().getGetReviewsFromGoogle();
+    const getReviewsFromHostAway = container().getReviewsFromHostAway();
+    const getMockReviews = container().getMockReviews();
+    const getReviewsFromGoogle = container().getReviewsFromGoogle();
+    const getListingByIdUseCase = container().getListingByIdUseCase();
+
+    // Fetch the listing to get name and address
+    const listing = await getListingByIdUseCase.execute(listingIdNumber);
+    if (!listing) {
+      return NextResponse.json(
+        {
+          error: 'Listing not found',
+          message: `No listing found for id ${listingIdNumber}`,
+        },
+        { status: 404 }
+      );
+    }
 
     // Fetch from all sources in parallel
     const [hostawayReviews, mockReviews, googleReviews] = await Promise.all([
       getReviewsFromHostAway.execute({ 
-        listingId: listingIdNumber 
+        listingMapIds: [listingIdNumber],
+        type: 'guest-to-host'
       }),
-      getMockReviews.execute(),
-      getReviewsFromGoogle.execute(),
+      getMockReviews.execute([listingIdNumber]),
+      getReviewsFromGoogle.execute(listingIdNumber, listing.name, listing.city + ', ' + listing.country),
     ]);
 
     // Combine all reviews
@@ -56,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     // Filter for approved reviews only for this listing
     const approvedReviews = allReviews.filter(review => 
-      review.listingId === listingIdNumber && approvedReviewIds.includes(review.id)
+      review.listingMapId === listingIdNumber && approvedReviewIds.includes(review.id)
     );
 
     return NextResponse.json({

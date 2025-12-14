@@ -20,6 +20,8 @@ export default async function ListingReportPage({ params }: Props) {
   if (!listingData) {
     notFound();
   }
+
+  console.log(listingData)
   
   return <ListingDetailClient initialData={listingData} listingId={listingId} />;
 }

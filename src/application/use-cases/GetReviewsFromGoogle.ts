@@ -6,8 +6,8 @@ export class GetReviewsFromGoogle {
 
   async execute(
     listingId: number,
-    listingName?: string,
-    listingAddress?: string
+    listingName: string,
+    listingAddress: string
   ): Promise<Review[]> {
     return await this.reviewRepository.getReviewsFromGoogle(
       listingId,

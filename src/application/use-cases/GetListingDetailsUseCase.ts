@@ -44,10 +44,8 @@ export class GetListingDetailsUseCase {
   ) {}
 
   async execute(listingId: number): Promise<ListingDetailsResult | null> {
-    // Get all listings and find the specific one
-    const listings = await this.listingRepository.getAllListings();
-    const listing = listings.find(l => l.id === listingId);
-
+    // Get the listing by id
+    const listing = await this.listingRepository.getListingById(listingId);
     if (!listing) {
       return null;
     }
@@ -59,7 +57,7 @@ export class GetListingDetailsUseCase {
         type: 'guest-to-host'
       }),
       this.getMockReviews.execute([listingId]),
-      this.getReviewsFromGoogle.execute(),
+      this.getReviewsFromGoogle.execute(listingId, listing.name, listing.city + ', ' + listing.country),
       this.getApprovedReviewIdsByListing.execute(listingId),
     ]);
 

@@ -119,7 +119,7 @@ export class GooglePlacesClient {
         .map((googleReview: any, index: number) => {
           // Map Google review fields to Review model
           return {
-            id: Number(`${listingId}00${index}`),
+            id: Number(`${listingId}0${index}`),
             type: googleReview.type || 'guest-to-host',
             status: googleReview.status || 'published',
             rating: typeof googleReview.rating === 'number' ? googleReview.rating : null,
