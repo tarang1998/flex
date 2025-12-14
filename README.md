@@ -45,6 +45,7 @@
 ## API Behaviors
 
 - **GET `/api/reviews/hostaway`**
+
   - `/api/reviews/hostaway` returns normalized, structured review data for frontend use.
     - **Query Parameters:**
       - `listingMapIds` (comma-separated numbers): Filter by listing IDs. Example: `listingMapIds=123,456`
@@ -77,6 +78,47 @@
         "count": 1
       }
       ```
+
+- **GET `/api/reviews/google`**
+  - Returns normalized Google Places reviews for a property, if a matching place is found.
+    - **Query Parameters:**
+      - `listingId` (number, optional): The unique ID for the listing. If not provided, a random ID is generated for the request.
+      - `listingName` (string, required): The name of the property/listing to search for in Google Places.
+      - `listingAddress` (string, required): The address of the property/listing to search for in Google Places.
+    - **Response Model:**
+      ```json
+      {
+        "status": "success",
+        "data": [
+          {
+            "id": 123456,
+            "type": "guest-to-host",
+            "status": "published",
+            "rating": 4.5,
+            "publicReview": "Great location and friendly host!",
+            "reviewCategory": [],
+            "submittedAt": "2025-12-14T00:00:00.000Z",
+            "guestName": "Jane Smith",
+            "listingName": "Cozy Apartment",
+            "listingMapId": 123456,
+            "channel": "Google"
+          }
+        ],
+        "count": 1
+      }
+      ```
+    - **Error Responses:**
+      - If `listingName` or `listingAddress` is missing:
+        ```json
+        {
+          "status": "error",
+          "message": "listingName and listingAddress are required query parameters."
+        }
+        ```
+      - If no Google reviews are found, `data` will be an empty array.
+    - **Notes:**
+      - If a property cannot be matched in Google Places, the response will contain no reviews, but the request will not fail.
+      - This endpoint is used by the dashboard to supplement Hostaway reviews with public Google reviews where available.
 
 ## Google Reviews Findings
 
