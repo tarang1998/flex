@@ -25,8 +25,6 @@
 
 - **GET `/api/reviews/hostaway`**
   - Returns normalized reviews from the Hostaway (mocked) API.
-- **GET `/api/reviews/approved?listingId=...`**
-  - Returns only manager-approved reviews for a given listing.
 
 ## Google Reviews Findings
 
