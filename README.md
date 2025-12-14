@@ -1,9 +1,21 @@
 # Flex Living Reviews Dashboard
 
+## Live Demo
+
+You can try the Flex Living Reviews Dashboard live here:
+
+- **Manager Dashboard:** [https://flex-delta-orcin.vercel.app/](https://flex-delta-orcin.vercel.app/)
+
+**How to use:**
+
+- The app opens directly to the Manager Dashboard, where you can view all property listings (the ones retrieved from the hostaway API) and their review stats.
+- To view the full property review display page for a specific listing, click **View Full Property Details** on any listing report.
+- Only reviews approved by the manager are shown on the public page.
+
 ## Tech Stack
 
 - **Frontend:** Next.js (App Router), React, TypeScript
-- **Backend:** Next.js API routes, Node.js
+- **Backend:** Next.js API routes, Node.js, Supabase
 - **APIs:**
   - Hostaway Reviews API (mocked)
   - Google Places API (if feasible)
