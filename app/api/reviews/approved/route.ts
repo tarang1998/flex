@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
         type: 'guest-to-host'
       }),
       getMockReviews.execute([listingIdNumber]),
-      getReviewsFromGoogle.execute(listingIdNumber, listing.name, listing.city + ', ' + listing.country),
+      getReviewsFromGoogle.execute(listingIdNumber, listing.name, listing.address),
     ]);
 
     // Combine all reviews

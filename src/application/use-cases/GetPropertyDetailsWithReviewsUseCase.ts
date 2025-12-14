@@ -77,7 +77,7 @@ export class GetPropertyDetailsWithReviewsUseCase {
       this.getReviewsFromGoogle.execute(
         listingId,
         listing.name,
-        listing.city + ', ' + listing.country
+        listing.address
       ),
       this.getApprovedReviewIdsByListing.execute(listingId),
     ]);

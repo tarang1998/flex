@@ -75,7 +75,7 @@ export class GetDashboardStatsUseCase {
           this.getReviewsFromGoogle.execute(
             listing.id, 
             listing.name, 
-            listing.city + ', ' + listing.country)
+            listing.address)
         )
       ),
       ...listingIds.map((listingId: number) => this.getApprovedReviewIdsByListing.execute(listingId)),
