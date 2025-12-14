@@ -27,6 +27,8 @@ You can try the Flex Living Reviews Dashboard live here:
   - Mocked Hostaway API using provided JSON data.
 - **Google Reviews Integration:**
   - Integrated via Google Places API where possible.
+  - Attempting to fetch reviews from the listings mentioned in the sandbox environment, however no reviews are found for these listings
+    ![alt text](image.png)
 - **Manager Dashboard:**
   - Displays property listings provided by the sandboxed Hostaway API.
   - Managers can approve reviews for public display.
