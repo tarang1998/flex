@@ -7,11 +7,13 @@ import { IReviewRepository } from '@/domain/repositories/IReviewRepository';
 import { Review, ReviewFilters } from '@/domain/entities/Review';
 import { mockReviews } from '../data/mockReviews';
 import { HostawayClient } from '../api/HostawayClient';
+import { GooglePlacesClient } from '../api/GooglePlacesClient';
 import { supabase } from '../database/supabase';
 
 export class ReviewRepository implements IReviewRepository {
   private reviews: Review[] = [...mockReviews];
   private hostawayClient: HostawayClient;
+  private googlePlacesClient?: GooglePlacesClient;
 
   constructor() {
     const accountId = process.env.HOSTAWAY_ACCOUNT_ID;
@@ -22,6 +24,14 @@ export class ReviewRepository implements IReviewRepository {
     }
     
     this.hostawayClient = new HostawayClient(accountId, apiKey);
+
+    // Initialize Google Places client if API key is available
+    const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
+    if (googleApiKey) {
+      this.googlePlacesClient = new GooglePlacesClient(googleApiKey);
+    } else {
+      console.warn('Google Places API key not configured. Google reviews will not be available.');
+    }
   }
 
   async getReviewsFromHostAway(filters?: ReviewFilters): Promise<Review[]> {
@@ -38,8 +48,24 @@ export class ReviewRepository implements IReviewRepository {
     );
   }
 
-  async getReviewsFromGoogle(): Promise<Review[]> {
-    return [];
+  async getReviewsFromGoogle(listingId: number,listingName?: string, listingAddress?: string): Promise<Review[]> {
+    if (!this.googlePlacesClient) {
+      console.warn('Google Places client not initialized. Returning empty reviews.');
+      return [];
+    }
+
+    try {
+      // Search by name and address
+      if (listingName && listingAddress) {
+        return await this.googlePlacesClient.fetchReviewsByNameAndAddress(listingId,listingName, listingAddress);
+      }
+
+      console.warn('Insufficient information to fetch Google reviews. Need listingName and listingAddress');
+      return [];
+    } catch (error) {
+      console.error('Error fetching Google reviews:', error);
+      return [];
+    }
   }
 
   async getApprovedReviewIdsByListing(listingId: number): Promise<number[]> {

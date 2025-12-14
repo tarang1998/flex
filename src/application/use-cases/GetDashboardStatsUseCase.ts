@@ -39,7 +39,7 @@ interface GetMockReviews {
 }
 
 interface GetReviewsFromGoogle {
-  execute(): Promise<Review[]>;
+  execute(listingId: number, name: string, address: string): Promise<Review[]>;
 }
 
 interface GetApprovedReviewIdsByListing {
@@ -64,13 +64,20 @@ export class GetDashboardStatsUseCase {
     const listingIds = listings.map((l: Listing) => l.id);
 
     // Fetch all reviews and approved review IDs in parallel
-    const [hostawayReviews, mockReviews, googleReviews, ...approvedReviewsByListing] = await Promise.all([
+    const [hostawayReviews, mockReviews, googleReviewsArrays, ...approvedReviewsByListing] = await Promise.all([
       this.getReviewsFromHostAway.execute({ 
         listingMapIds: listingIds,
         type: 'guest-to-host'
       }),
       this.getMockReviews.execute(listingIds),
-      this.getReviewsFromGoogle.execute(),
+      Promise.all(
+        listings.map((listing: Listing) =>
+          this.getReviewsFromGoogle.execute(
+            listing.id, 
+            listing.name, 
+            listing.city + ', ' + listing.country)
+        )
+      ),
       ...listingIds.map((listingId: number) => this.getApprovedReviewIdsByListing.execute(listingId)),
     ]);
 
@@ -81,6 +88,7 @@ export class GetDashboardStatsUseCase {
     });
 
     // Combine all reviews
+    const googleReviews = ([] as Review[]).concat(...googleReviewsArrays);
     const allReviews = [...hostawayReviews, ...mockReviews, ...googleReviews]
       .filter(r => r.type === 'guest-to-host');
 

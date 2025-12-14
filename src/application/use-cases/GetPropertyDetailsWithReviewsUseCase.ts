@@ -74,7 +74,11 @@ export class GetPropertyDetailsWithReviewsUseCase {
         type: 'guest-to-host'
       }),
       this.getMockReviews.execute([listingId]),
-      this.getReviewsFromGoogle.execute(),
+      this.getReviewsFromGoogle.execute(
+        listingId,
+        listing.name,
+        listing.city + ', ' + listing.country
+      ),
       this.getApprovedReviewIdsByListing.execute(listingId),
     ]);
 
