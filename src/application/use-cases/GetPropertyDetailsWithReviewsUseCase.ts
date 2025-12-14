@@ -1,6 +1,6 @@
 /**
- * Application Layer - Get Properties Use Case
- * Business logic for fetching properties with approved reviews and ratings
+ * Application Layer - Get Property Details with Reviews Use Case
+ * Fetches property details along with approved reviews from all sources
  */
 
 import { IListingRepository } from '@/domain/repositories/IListingRepository';
@@ -10,22 +10,7 @@ import { GetReviewsFromGoogle } from './GetReviewsFromGoogle';
 import { GetApprovedReviewIdsByListing } from './GetApprovedReviewIdsByListing';
 import { Review } from '@/domain/entities/Review';
 
-export interface PropertySummary {
-  id: number;
-  name: string;
-  city: string;
-  country: string;
-  propertyType: string | null;
-  bedrooms: number;
-  bathrooms: number;
-  maxGuests: number;
-  photos: string[];
-  starRating: number;
-  reviewCount: number;
-  averageRating: number;
-}
-
-export interface PropertyDetails {
+export interface PropertyDetailsWithReviews {
   id: number;
   name: string;
   address?: string;
@@ -60,9 +45,12 @@ export interface PropertyDetails {
   keyPickup?: string;
   createdAt?: string;
   updatedAt?: string;
+  approvedReviews: Review[];
+  reviewCount: number;
+  calculatedAverageRating: number;
 }
 
-export class GetPropertiesUseCase {
+export class GetPropertyDetailsWithReviewsUseCase {
   constructor(
     private listingRepository: IListingRepository,
     private getReviewsFromHostAway: GetReviewsFromHostAway,
@@ -71,87 +59,40 @@ export class GetPropertiesUseCase {
     private getApprovedReviewIdsByListing: GetApprovedReviewIdsByListing
   ) {}
 
-  async execute(listingId?: number): Promise<PropertySummary[] | PropertySummary | null> {
-    // Fetch listing(s) based on whether ID is provided
-    let filteredListings;
-    if (listingId) {
-      const listing = await this.listingRepository.getListingById(listingId);
-      filteredListings = listing ? [listing] : [];
-    } else {
-      filteredListings = await this.listingRepository.getAllListings();
-    }
-    
-    const listingIds = filteredListings.map(l => l.id);
-
-    // Fetch all reviews and approved review IDs in parallel
-    const [hostawayReviews, mockReviews, googleReviews, ...approvedReviewsByListing] = await Promise.all([
-      this.getReviewsFromHostAway.execute({ 
-        listingMapIds: listingIds,
-        type: 'guest-to-host'
-      }),
-      this.getMockReviews.execute(listingIds),
-      this.getReviewsFromGoogle.execute(),
-      ...listingIds.map(id => this.getApprovedReviewIdsByListing.execute(id)),
-    ]);
-
-    // Create a map of listingId -> Set of approved review IDs
-    const approvedReviewsMap = new Map<number, Set<number>>();
-    listingIds.forEach((id, index) => {
-      approvedReviewsMap.set(id, new Set(approvedReviewsByListing[index]));
-    });
-
-    // Combine all reviews
-    const allReviews = [...hostawayReviews, ...mockReviews, ...googleReviews]
-      .filter(r => r.type === 'guest-to-host');
-
-    // Build properties list with approved reviews only
-    const properties = filteredListings
-      .filter(listing => listing.isActive)
-      .map(listing => {
-        // Get all reviews for this listing
-        const listingReviews = allReviews.filter(
-          review => review.listingMapId === listing.id || review.listingName === listing.name
-        );
-
-        // Get only approved reviews
-        const approvedReviewIds = approvedReviewsMap.get(listing.id) || new Set<number>();
-        const approvedReviews = listingReviews.filter(r => r.id && approvedReviewIds.has(r.id));
-
-        // Calculate average rating from approved reviews
-        const averageRating = this.calculateAverageRating(approvedReviews);
-
-        return {
-          id: listing.id,
-          name: listing.name,
-          city: listing.city,
-          country: listing.country,
-          propertyType: listing.propertyType,
-          bedrooms: listing.bedrooms,
-          bathrooms: listing.bathrooms,
-          maxGuests: listing.maxGuests,
-          photos: listing.photos,
-          starRating: listing.starRating,
-          reviewCount: approvedReviews.length,
-          averageRating: Number(averageRating.toFixed(2)),
-        };
-      })
-      .filter(property => property.reviewCount > 0); // Only show properties with approved reviews
-
-    // If requesting a single property, return just that property or null
-    if (listingId) {
-      return properties[0] || null;
-    }
-
-    // Otherwise return all properties
-    return properties;
-  }
-
-  async getPropertyDetails(listingId: number): Promise<PropertyDetails | null> {
+  async execute(listingId: number): Promise<PropertyDetailsWithReviews | null> {
+    // Fetch the listing
     const listing = await this.listingRepository.getListingById(listingId);
     
     if (!listing) {
       return null;
     }
+
+    // Fetch all reviews and approved review IDs in parallel
+    const [hostawayReviews, mockReviews, googleReviews, approvedReviewIds] = await Promise.all([
+      this.getReviewsFromHostAway.execute({ 
+        listingMapIds: [listingId],
+        type: 'guest-to-host'
+      }),
+      this.getMockReviews.execute([listingId]),
+      this.getReviewsFromGoogle.execute(),
+      this.getApprovedReviewIdsByListing.execute(listingId),
+    ]);
+
+    // Combine all reviews
+    const allReviews = [...hostawayReviews, ...mockReviews, ...googleReviews]
+      .filter(r => r.type === 'guest-to-host');
+
+    // Filter to only reviews for this specific listing
+    const listingReviews = allReviews.filter(
+      review => review.listingMapId === listing.id || review.listingName === listing.name
+    );
+
+    // Get only approved reviews
+    const approvedReviewIdsSet = new Set(approvedReviewIds);
+    const approvedReviews = listingReviews.filter(r => r.id && approvedReviewIdsSet.has(r.id));
+
+    // Calculate average rating from approved reviews
+    const calculatedAverageRating = this.calculateAverageRating(approvedReviews);
 
     return {
       id: listing.id,
@@ -186,6 +127,9 @@ export class GetPropertiesUseCase {
       keyPickup: listing.keyPickup,
       createdAt: listing.createdAt,
       updatedAt: listing.updatedAt,
+      approvedReviews: approvedReviews,
+      reviewCount: approvedReviews.length,
+      calculatedAverageRating: Number(calculatedAverageRating.toFixed(2)),
     };
   }
 

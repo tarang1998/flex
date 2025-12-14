@@ -8,12 +8,12 @@ interface Props {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-// Fetch property data for metadata and page
+// Fetch property data with reviews for metadata and page
 async function getProperty(id: string) {
   try {
-    const getPropertiesUseCase = container().getPropertiesUseCase();
-    const property = await getPropertiesUseCase.getPropertyDetails(parseInt(id));
-    return property;
+    const getPropertyDetailsWithReviewsUseCase = container().getPropertyDetailsWithReviewsUseCase();
+    const propertyWithReviews = await getPropertyDetailsWithReviewsUseCase.execute(parseInt(id));
+    return propertyWithReviews;
   } catch (error) {
     console.error('Error fetching property:', error);
     return null;

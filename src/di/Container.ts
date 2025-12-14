@@ -13,6 +13,7 @@ import { GetPropertiesUseCase } from '@/application/use-cases/GetPropertiesUseCa
 import { GetReviewStatsUseCase } from '@/application/use-cases/GetReviewStatsUseCase';
 import { UpdateReviewApprovalUseCase } from '@/application/use-cases/UpdateReviewApprovalUseCase';
 import { GetDashboardStatsUseCase } from '@/application/use-cases/GetDashboardStatsUseCase';
+import { GetPropertyDetailsWithReviewsUseCase } from '@/application/use-cases/GetPropertyDetailsWithReviewsUseCase';
 import { HostawayClient } from '@/infrastructure/api/HostawayClient';
 
 export class DIContainer {
@@ -108,6 +109,16 @@ export class DIContainer {
 
   getDashboardStatsUseCase(): GetDashboardStatsUseCase {
     return new GetDashboardStatsUseCase(
+      this.getListingRepository(),
+      this.getReviewsFromHostAway(),
+      this.getMockReviews(),
+      this.getReviewsFromGoogle(),
+      this.getApprovedReviewIdsByListing()
+    );
+  }
+
+  getPropertyDetailsWithReviewsUseCase(): GetPropertyDetailsWithReviewsUseCase {
+    return new GetPropertyDetailsWithReviewsUseCase(
       this.getListingRepository(),
       this.getReviewsFromHostAway(),
       this.getMockReviews(),

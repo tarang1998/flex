@@ -39,6 +39,7 @@ export interface HostawayListingResponse {
     zipcode: string;
     roomType: string;
     bedroomsNumber: number;
+    bedsNumber?: number;
     bathroomsNumber: number;
     personCapacity: number;
     price: number;
@@ -49,6 +50,17 @@ export interface HostawayListingResponse {
     minNights: number;
     maxNights: number;
     cleaningFee: number;
+    checkInTimeStart?: number;
+    checkInTimeEnd?: number;
+    checkOutTime?: number;
+    houseRules?: string;
+    maxPetsAllowed?: number | null;
+    maxChildrenAllowed?: number | null;
+    maxInfantsAllowed?: number | null;
+    cancellationPolicy?: string;
+    refundableDamageDeposit?: number;
+    specialInstruction?: string;
+    keyPickup?: string;
     listingImages: Array<{
       id: number;
       caption: string;
@@ -271,25 +283,44 @@ export class HostawayClient {
       return [];
     }
 
-    return response.result.map((listing) => ({
-      id: listing.id,
-      name: listing.name,
-      address: listing.publicAddress || listing.address,
-      city: listing.city,
-      country: listing.country,
-      propertyType: listing.roomType,
-      bedrooms: listing.bedroomsNumber,
-      bathrooms: listing.bathroomsNumber,
-      maxGuests: listing.personCapacity,
-      photos: listing.listingImages?.sort((a, b) => a.sortOrder - b.sortOrder).map(img => img.url) || [],
-      description: listing.description || '',
-      amenities: listing.listingAmenities?.map(a => `Amenity ${a.amenityId}`) || [],
-      isActive: true,
-      starRating: listing.starRating || 0,
-      averageReviewRating: listing.averageReviewRating || 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }));
+    return response.result.map((listing) => {
+      const sortedImages = listing.listingImages?.sort((a, b) => a.sortOrder - b.sortOrder) || [];
+      
+      return {
+        id: listing.id,
+        name: listing.name,
+        address: listing.publicAddress || listing.address,
+        city: listing.city,
+        country: listing.country,
+        propertyType: listing.roomType,
+        bedrooms: listing.bedroomsNumber,
+        beds: listing.bedsNumber,
+        bathrooms: listing.bathroomsNumber,
+        maxGuests: listing.personCapacity,
+        photos: sortedImages.map(img => img.url),
+        description: listing.description || '',
+        amenities: listing.listingAmenities?.map(a => `Amenity ${a.amenityId}`) || [],
+        isActive: true,
+        starRating: listing.starRating || 0,
+        averageReviewRating: listing.averageReviewRating || 0,
+        checkInTimeStart: listing.checkInTimeStart,
+        checkInTimeEnd: listing.checkInTimeEnd,
+        checkOutTime: listing.checkOutTime,
+        houseRules: listing.houseRules,
+        maxPetsAllowed: listing.maxPetsAllowed,
+        maxChildrenAllowed: listing.maxChildrenAllowed,
+        maxInfantsAllowed: listing.maxInfantsAllowed,
+        cancellationPolicy: listing.cancellationPolicy,
+        minNights: listing.minNights,
+        maxNights: listing.maxNights,
+        refundableDamageDeposit: listing.refundableDamageDeposit,
+        cleaningFee: listing.cleaningFee,
+        specialInstruction: listing.specialInstruction,
+        keyPickup: listing.keyPickup,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    });
   }
 
   /**

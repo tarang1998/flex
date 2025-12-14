@@ -193,7 +193,7 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
               Back to Dashboard
             </Link>
             <Link
-              href={`/properties/${listing.id}`}
+              href={`/property/${listing.id}`}
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

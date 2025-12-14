@@ -12,6 +12,7 @@ export interface Listing {
   propertyType: string;
   bedrooms: number;
   bathrooms: number;
+  beds?: number;
   maxGuests: number;
   photos: string[];
   description: string;
@@ -19,6 +20,20 @@ export interface Listing {
   isActive: boolean;
   starRating: number;
   averageReviewRating: number;
+  checkInTimeStart?: number;
+  checkInTimeEnd?: number;
+  checkOutTime?: number;
+  houseRules?: string;
+  maxPetsAllowed?: number | null;
+  maxChildrenAllowed?: number | null;
+  maxInfantsAllowed?: number | null;
+  cancellationPolicy?: string;
+  minNights?: number;
+  maxNights?: number;
+  refundableDamageDeposit?: number;
+  cleaningFee?: number;
+  specialInstruction?: string;
+  keyPickup?: string;
   createdAt: string;
   updatedAt: string;
 }
