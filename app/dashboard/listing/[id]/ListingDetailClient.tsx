@@ -168,6 +168,18 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
     return 'bg-green-50 border-green-200';
   };
 
+  // --- Time-based review stats ---
+  // Calculate review counts for last 7, 30, 90 days
+  const now = new Date();
+  const daysAgo = (n: number) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - n);
+    return d;
+  };
+  const reviewsLast7 = reviews.filter(r => r.submittedAt && new Date(r.submittedAt) >= daysAgo(7)).length;
+  const reviewsLast30 = reviews.filter(r => r.submittedAt && new Date(r.submittedAt) >= daysAgo(30)).length;
+  const reviewsLast90 = reviews.filter(r => r.submittedAt && new Date(r.submittedAt) >= daysAgo(90)).length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -414,6 +426,8 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
             </div>
           )}
 
+          
+
           {/* Category Ratings */}
           {Object.keys(stats.categoryAverages).length > 0 && (
             <div className="bg-white rounded-xl shadow-md border border-gray-200">
@@ -523,6 +537,53 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
                     {totalReviews > 0 ? ((approvedReviews / totalReviews) * 100).toFixed(0) : 0}% of reviews approved ({approvedReviews}/{totalReviews})
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Time Stats for Reviews */}
+        <div className="w-full mb-8">
+          <div className="relative bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 rounded-2xl shadow-lg border-2 border-blue-200 flex flex-col sm:flex-row items-stretch justify-between px-2 sm:px-8 py-6 gap-4 overflow-hidden">
+            {/* Decorative background shapes */}
+            <div className="absolute -top-8 -left-8 w-40 h-40 bg-blue-200 opacity-20 rounded-full z-0" />
+            <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-pink-200 opacity-20 rounded-full z-0" />
+            <div className="flex flex-1 flex-col sm:flex-row items-center justify-between w-full gap-2 z-10">
+              {/* Stat: Last 7 days */}
+              <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-6 py-3 bg-white/80 rounded-xl shadow border border-blue-100 mx-1 min-w-[120px]">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Last 7 days</span>
+                </div>
+                <span className="text-3xl font-extrabold text-blue-700 drop-shadow">{reviewsLast7}</span>
+                <span className="text-xs text-gray-500">reviews</span>
+              </div>
+              {/* Stat: Last 30 days */}
+              <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-6 py-3 bg-white/80 rounded-xl shadow border border-purple-100 mx-1 min-w-[120px]">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Last 30 days</span>
+                </div>
+                <span className="text-3xl font-extrabold text-purple-700 drop-shadow">{reviewsLast30}</span>
+                <span className="text-xs text-gray-500">reviews</span>
+              </div>
+              {/* Stat: Last 90 days */}
+              <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-6 py-3 bg-white/80 rounded-xl shadow border border-pink-100 mx-1 min-w-[120px]">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  <span className="text-xs font-semibold text-pink-700 uppercase tracking-wide">Last 90 days</span>
+                </div>
+                <span className="text-3xl font-extrabold text-pink-700 drop-shadow">{reviewsLast90}</span>
+                <span className="text-xs text-gray-500">reviews</span>
+              </div>
+              {/* Stat: All Time */}
+              <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-6 py-3 bg-gradient-to-br from-blue-200/60 via-purple-200/60 to-pink-200/60 rounded-xl shadow border border-gray-200 mx-1 min-w-[120px]">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">All Time</span>
+                </div>
+                <span className="text-3xl font-extrabold text-gray-800 drop-shadow">{totalReviews}</span>
+                <span className="text-xs text-gray-500">reviews</span>
               </div>
             </div>
           </div>
