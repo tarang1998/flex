@@ -585,30 +585,37 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
                 </select>
               </div>
 
-              {/* Sort By */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Sort By</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'date' | 'rating')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              {/* Sort By with Direction Toggle */}
+              <div className="col-span-2 flex items-center gap-2">
+                <div className="flex-1 flex flex-col justify-end h-full">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Sort By</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'date' | 'rating')}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  >
+                    <option value="date">Date</option>
+                    <option value="rating">Rating</option>
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  aria-label={sortDirection === 'desc' ? 'Descending' : 'Ascending'}
+                  onClick={() => setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc')}
+                  className="self-end px-2 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-100 flex items-center justify-center"
                 >
-                  <option value="date">Date</option>
-                  <option value="rating">Rating</option>
-                </select>
-              </div>
-
-              {/* Sort Direction */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Order</label>
-                <select
-                  value={sortDirection}
-                  onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="desc">Newest / Highest</option>
-                  <option value="asc">Oldest / Lowest</option>
-                </select>
+                  {sortDirection === 'desc' ? (
+                    // Descending icon
+                    <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  ) : (
+                    // Ascending icon
+                    <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </div>
 
