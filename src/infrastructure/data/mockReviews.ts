@@ -19,7 +19,7 @@ export const mockReviews: Review[] = [
     type: 'guest-to-host',
     status: 'published',
     rating: 1,
-    publicReview: 'Amazing stay at The Bromley Collection! The apartment was spotlessly clean and beautifully decorated. Perfect location near Bromley North Station. Highly recommend!',
+    publicReview: 'Very disappointing stay. The apartment was not clean, poorly maintained, and did not match the photos. Would not recommend.',
     reviewCategory: [
       { category: 'cleanliness', rating: 1 },
       { category: 'communication', rating: 1 },
@@ -39,7 +39,7 @@ export const mockReviews: Review[] = [
     type: 'guest-to-host',
     status: 'published',
     rating: 2,
-    publicReview: 'Great apartment for our family stay. Two bedrooms were spacious and comfortable. Only minor issue was some street noise at night, but overall excellent experience.',
+    publicReview: 'Not a great experience. The apartment was noisy at night and cleanliness was below expectations. Needs improvement.',
     reviewCategory: [
       { category: 'cleanliness', rating: 2 },
       { category: 'communication', rating: 2 },
@@ -59,7 +59,7 @@ export const mockReviews: Review[] = [
     type: 'guest-to-host',
     status: 'published',
     rating: 1,
-    publicReview: 'Exceeded all expectations! The property is exactly as described in photos. Kitchen was fully equipped, WiFi was fast, and Michael was incredibly responsive. Will definitely be back!',
+    publicReview: 'Very poor experience. The property was not as described, amenities were lacking, and communication was difficult. Would not stay again.',
     reviewCategory: [
       { category: 'cleanliness', rating: 1 },
       { category: 'communication', rating: 1 },
