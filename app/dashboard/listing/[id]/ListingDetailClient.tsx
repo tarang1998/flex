@@ -542,50 +542,69 @@ export default function ListingDetailClient({ initialData, listingId }: Props) {
           </div>
         </div>
 
-        {/* Time Stats for Reviews */}
+        {/* Time & Trend Stats for Reviews */}
         <div className="w-full mb-8">
-          <div className="relative bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 rounded-2xl shadow-lg border-2 border-blue-200 flex flex-col sm:flex-row items-stretch justify-between px-2 sm:px-8 py-6 gap-4 overflow-hidden">
-            {/* Decorative background shapes */}
-            <div className="absolute -top-8 -left-8 w-40 h-40 bg-blue-200 opacity-20 rounded-full z-0" />
-            <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-pink-200 opacity-20 rounded-full z-0" />
-            <div className="flex flex-1 flex-col sm:flex-row items-center justify-between w-full gap-2 z-10">
-              {/* Stat: Last 7 days */}
-              <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-6 py-3 bg-white/80 rounded-xl shadow border border-blue-100 mx-1 min-w-[120px]">
-                <div className="flex items-center gap-2 mb-1">
-                  <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Last 7 days</span>
+          <div className="bg-white rounded-xl shadow border border-gray-200 flex flex-col md:flex-row items-center justify-between px-4 py-5 gap-4">
+            {/* Helper functions for period stats */}
+            {(() => {
+              // Helper to get reviews in a period
+              const getPeriod = (daysAgoStart: number, daysAgoEnd: number = 0) => {
+                const now = new Date();
+                const start = new Date(now);
+                start.setDate(start.getDate() - daysAgoStart);
+                const end = new Date(now);
+                end.setDate(end.getDate() - daysAgoEnd);
+                return reviews.filter(r => r.submittedAt && new Date(r.submittedAt) >= start && new Date(r.submittedAt) < end);
+              };
+              // Stats for each period
+              const periods = [
+                { label: 'Last 7 days', days: 7 },
+                { label: 'Last 30 days', days: 30 },
+                { label: 'Last 90 days', days: 90 },
+              ];
+              // Calculate stats for each period
+              const statsArr = periods.map((p, i) => {
+                const reviewsThis = getPeriod(p.days, 0);
+                const reviewsPrev = getPeriod(p.days * 2, p.days);
+                const count = reviewsThis.length;
+                const prevCount = reviewsPrev.length;
+                const avgRating = count > 0 ? (reviewsThis.reduce((sum, r) => sum + (r.rating || 0), 0) / count) : null;
+                const prevAvgRating = prevCount > 0 ? (reviewsPrev.reduce((sum, r) => sum + (r.rating || 0), 0) / prevCount) : null;
+                const pctChange = prevCount > 0 ? ((count - prevCount) / prevCount) * 100 : null;
+                const ratingChange = (avgRating !== null && prevAvgRating !== null) ? (avgRating - prevAvgRating) : null;
+                return { ...p, count, avgRating, pctChange, ratingChange };
+              });
+              return (
+                <div className="flex flex-1 flex-col md:flex-row items-center justify-between w-full gap-4">
+                  {statsArr.map((stat, idx) => (
+                    <div key={stat.label} className="flex-1 flex flex-col items-center justify-center px-2 md:px-6 py-2 md:py-3 min-w-[120px] border-r last:border-r-0 border-gray-100">
+                      <div className="text-xs font-semibold text-gray-700 mb-1">{stat.label}</div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-2xl font-bold text-gray-900">{stat.count}</span>
+                      </div>
+                      <div className="text-xs text-gray-500">reviews</div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                        <span className="text-xs text-gray-700">Avg: {stat.avgRating !== null ? stat.avgRating.toFixed(2) : '--'}</span>
+                        {stat.ratingChange !== null && (
+                          <span className={`text-xs ${stat.ratingChange > 0 ? 'text-green-600' : stat.ratingChange < 0 ? 'text-red-600' : 'text-gray-500'}`}>{stat.ratingChange > 0 ? '▲' : stat.ratingChange < 0 ? '▼' : ''}{stat.ratingChange?.toFixed(2)}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {/* All time summary */}
+                  <div className="flex-1 flex flex-col items-center justify-center px-2 md:px-6 py-2 md:py-3 min-w-[120px]">
+                    <div className="text-xs font-semibold text-gray-700 mb-1">All Time</div>
+                    <span className="text-2xl font-bold text-gray-900">{totalReviews}</span>
+                    <div className="text-xs text-gray-500">reviews</div>
+                    <div className="flex items-center gap-1 mt-1">
+                      <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                      <span className="text-xs text-gray-700">Avg: {totalReviews > 0 ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / totalReviews).toFixed(2) : '--'}</span>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-3xl font-extrabold text-blue-700 drop-shadow">{reviewsLast7}</span>
-                <span className="text-xs text-gray-500">reviews</span>
-              </div>
-              {/* Stat: Last 30 days */}
-              <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-6 py-3 bg-white/80 rounded-xl shadow border border-purple-100 mx-1 min-w-[120px]">
-                <div className="flex items-center gap-2 mb-1">
-                  <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  <span className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Last 30 days</span>
-                </div>
-                <span className="text-3xl font-extrabold text-purple-700 drop-shadow">{reviewsLast30}</span>
-                <span className="text-xs text-gray-500">reviews</span>
-              </div>
-              {/* Stat: Last 90 days */}
-              <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-6 py-3 bg-white/80 rounded-xl shadow border border-pink-100 mx-1 min-w-[120px]">
-                <div className="flex items-center gap-2 mb-1">
-                  <svg className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  <span className="text-xs font-semibold text-pink-700 uppercase tracking-wide">Last 90 days</span>
-                </div>
-                <span className="text-3xl font-extrabold text-pink-700 drop-shadow">{reviewsLast90}</span>
-                <span className="text-xs text-gray-500">reviews</span>
-              </div>
-              {/* Stat: All Time */}
-              <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-6 py-3 bg-gradient-to-br from-blue-200/60 via-purple-200/60 to-pink-200/60 rounded-xl shadow border border-gray-200 mx-1 min-w-[120px]">
-                <div className="flex items-center gap-2 mb-1">
-                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">All Time</span>
-                </div>
-                <span className="text-3xl font-extrabold text-gray-800 drop-shadow">{totalReviews}</span>
-                <span className="text-xs text-gray-500">reviews</span>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         </div>
 
